@@ -23,7 +23,18 @@ const animate = () => {
 onMounted(() => {
   document.body.addEventListener('touchstart', togglePauseOnTouch)
 
-  window.addEventListener('deviceorientation', handleDeviceMotion)
+  // Request permission for deviceorientation on iOS
+  if (typeof DeviceOrientationEvent.requestPermission === 'function') {
+    DeviceOrientationEvent.requestPermission().then(response => {
+      if (response === 'granted') {
+        window.addEventListener('deviceorientation', handleDeviceMotion)
+      } else {
+        console.log('Permission not granted');
+      }
+    }).catch(console.error);
+  } else {
+    window.addEventListener('deviceorientation', handleDeviceMotion)
+  }
 
   document.addEventListener('mousemove', (event) => {
     mousePosition.value.x += (event.clientX - mousePosition.value.x) * smoothFactor
@@ -44,21 +55,18 @@ const handleDeviceMotion = (event) => {
   const beta = event.beta // Front-to-back tilt (x-axis)
   const gamma = event.gamma // Left-to-right tilt (y-axis)
 
+  // Log the values to check for motion
+  console.log("Beta:", beta, "Gamma:", gamma);
+
   // Adjust motionPosition based on the tilt/rotation
   motionPosition.value.x += gamma * 0.1
   motionPosition.value.y += beta * 0.1
-}
-
-const detectMotion = () => {
-  // Add any motion detection logic you need here, such as webcam-based detection
-  // or just update motionPosition based on phone's tilt, as done in handleDeviceMotion
 }
 
 const togglePauseOnTouch = () => {
   paused.value = !paused.value
   if (!paused.value) {
     animate()
-    detectMotion()
   }
 }
 
