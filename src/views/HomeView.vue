@@ -2,7 +2,7 @@
 import { ref, onMounted, onUnmounted } from 'vue'
 import SquareNoAnimation from '../components/SquareNoAnimation.vue'
 
-const count = window.innerWidth < 768 ? 400 : 600
+const count = 600 // Fixed count for all screen sizes
 const angles = ref(new Array(count).fill(0))
 const mousePosition = ref({ x: 0, y: 0 })
 
@@ -10,7 +10,6 @@ const smoothFactor = 0.1
 const paused = ref(false)
 
 let animationFrameId
-const motionPosition = ref({ x: 0, y: 0 })
 
 const animate = () => {
   if (paused.value) return
@@ -18,34 +17,6 @@ const animate = () => {
     angles.value[i] += 0.005 + i * 0.00005
   }
   animationFrameId = requestAnimationFrame(animate)
-}
-
-const handleDeviceMotion = (event) => {
-  const { beta, gamma } = event.rotationRate // tilt data from phone
-
-  // Adjust motionPosition based on the tilt/rotation
-  motionPosition.value.x += gamma * 0.1
-  motionPosition.value.y += beta * 0.1
-}
-
-const requestMotionPermission = () => {
-  if (typeof DeviceMotionEvent.requestPermission === "function") {
-    DeviceMotionEvent.requestPermission()
-      .then((response) => {
-        if (response === "granted") {
-          // Permission granted, add event listener
-          window.addEventListener('deviceorientation', handleDeviceMotion)
-        } else {
-          console.log("Permission denied for device motion.")
-        }
-      })
-      .catch((error) => {
-        console.error("Error requesting permission:", error)
-      })
-  } else {
-    // For non-iOS devices, directly add the event listener
-    window.addEventListener('deviceorientation', handleDeviceMotion)
-  }
 }
 
 const togglePauseOnTouch = () => {
@@ -66,14 +37,6 @@ const togglePause = () => {
 }
 
 onMounted(() => {
-  // Ensure permission is granted before adding the event listener for motion
-  if (window.DeviceMotionEvent && typeof DeviceMotionEvent.requestPermission === "function") {
-    document.body.addEventListener('touchstart', requestMotionPermission)
-  } else {
-    // For devices that don't need permission, directly add event listener
-    window.addEventListener('deviceorientation', handleDeviceMotion)
-  }
-
   document.body.addEventListener('touchstart', togglePauseOnTouch)
 
   document.addEventListener('mousemove', (event) => {
@@ -89,7 +52,6 @@ onMounted(() => {
 onUnmounted(() => {
   document.removeEventListener('click', togglePause)
   document.removeEventListener('touchstart', togglePauseOnTouch)
-  window.removeEventListener('deviceorientation', handleDeviceMotion)
 })
 
 </script>
