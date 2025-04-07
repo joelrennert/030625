@@ -2,7 +2,7 @@
 import { ref, onMounted } from 'vue'
 import SquareNoAnimation from '../components/SquareNoAnimation.vue'
 
-const count = 1200
+const count = window.innerWidth < 768 ? 400 : 600
 const angles = ref(new Array(count).fill(0))
 const motionPosition = ref({ x: 0, y: 0 })
 const smoothFactor = 0.1
