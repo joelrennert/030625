@@ -5,12 +5,12 @@ import SquareNoAnimation from '../components/SquareNoAnimation.vue'
 const count = window.innerWidth < 768 ? 400 : 600
 const angles = ref(new Array(count).fill(0))
 const mousePosition = ref({ x: 0, y: 0 })
-const motionPosition = ref({ x: 0, y: 0 }) // Initialize motionPosition
 
 const smoothFactor = 0.1
 const paused = ref(false)
 
 let animationFrameId
+const motionPosition = ref({ x: 0, y: 0 })
 
 const animate = () => {
   if (paused.value) return
@@ -20,47 +20,32 @@ const animate = () => {
   animationFrameId = requestAnimationFrame(animate)
 }
 
-onMounted(() => {
-  document.body.addEventListener('touchstart', togglePauseOnTouch)
-
-  // Request permission for deviceorientation on iOS
-  if (typeof DeviceOrientationEvent.requestPermission === 'function') {
-    DeviceOrientationEvent.requestPermission().then(response => {
-      if (response === 'granted') {
-        window.addEventListener('deviceorientation', handleDeviceMotion)
-      } else {
-        console.log('Permission not granted');
-      }
-    }).catch(console.error);
-  } else {
-    window.addEventListener('deviceorientation', handleDeviceMotion)
-  }
-
-  document.addEventListener('mousemove', (event) => {
-    mousePosition.value.x += (event.clientX - mousePosition.value.x) * smoothFactor
-    mousePosition.value.y += (event.clientY - mousePosition.value.y) * smoothFactor
-  })
-
-  document.addEventListener('click', togglePause)
-
-  animate()
-})
-
-onUnmounted(() => {
-  document.removeEventListener('click', togglePause)
-  window.removeEventListener('deviceorientation', handleDeviceMotion)
-})
-
 const handleDeviceMotion = (event) => {
-  const beta = event.beta // Front-to-back tilt (x-axis)
-  const gamma = event.gamma // Left-to-right tilt (y-axis)
-
-  // Log the values to check for motion
-  console.log("Beta:", beta, "Gamma:", gamma);
+  const { beta, gamma } = event.rotationRate // tilt data from phone
 
   // Adjust motionPosition based on the tilt/rotation
   motionPosition.value.x += gamma * 0.1
   motionPosition.value.y += beta * 0.1
+}
+
+const requestMotionPermission = () => {
+  if (typeof DeviceMotionEvent.requestPermission === "function") {
+    DeviceMotionEvent.requestPermission()
+      .then((response) => {
+        if (response === "granted") {
+          // Permission granted, add event listener
+          window.addEventListener('deviceorientation', handleDeviceMotion)
+        } else {
+          console.log("Permission denied for device motion.")
+        }
+      })
+      .catch((error) => {
+        console.error("Error requesting permission:", error)
+      })
+  } else {
+    // For non-iOS devices, directly add the event listener
+    window.addEventListener('deviceorientation', handleDeviceMotion)
+  }
 }
 
 const togglePauseOnTouch = () => {
@@ -79,6 +64,34 @@ const togglePause = () => {
     cancelAnimationFrame(animationFrameId)
   }
 }
+
+onMounted(() => {
+  // Ensure permission is granted before adding the event listener for motion
+  if (window.DeviceMotionEvent && typeof DeviceMotionEvent.requestPermission === "function") {
+    document.body.addEventListener('touchstart', requestMotionPermission)
+  } else {
+    // For devices that don't need permission, directly add event listener
+    window.addEventListener('deviceorientation', handleDeviceMotion)
+  }
+
+  document.body.addEventListener('touchstart', togglePauseOnTouch)
+
+  document.addEventListener('mousemove', (event) => {
+    mousePosition.value.x += (event.clientX - mousePosition.value.x) * smoothFactor
+    mousePosition.value.y += (event.clientY - mousePosition.value.y) * smoothFactor
+  })
+
+  document.addEventListener('click', togglePause)
+
+  animate()
+})
+
+onUnmounted(() => {
+  document.removeEventListener('click', togglePause)
+  document.removeEventListener('touchstart', togglePauseOnTouch)
+  window.removeEventListener('deviceorientation', handleDeviceMotion)
+})
+
 </script>
 
 <template>
@@ -90,15 +103,14 @@ const togglePause = () => {
         class="square"
         :style="{
           transform: `
-    translate(
-      ${Math.cos(angle + n * 0.04) * n * 1.2 + mousePosition.x * 0.05 + Math.cos(angle + n * 0.04 + mousePosition.x * 0.006) * n * 0.5}px, 
-      ${Math.sin(angle + n * 0.04) * n * 1.2 + mousePosition.y * 0.05 + Math.sin(angle + n * 0.04 + mousePosition.y * 0.006) * n * 0.5}px
-    )
-scale(${1.5 + Math.sin(angle * 2 + n * 0.05) * 0.4})    
-rotate(${n + 45454}deg)
-  `,
+            translate(
+              ${Math.cos(angle + n * 0.04) * n * 1.2 + mousePosition.x * 0.05 + Math.cos(angle + n * 0.04 + mousePosition.x * 0.006) * n * 0.5}px, 
+              ${Math.sin(angle + n * 0.04) * n * 1.2 + mousePosition.y * 0.05 + Math.sin(angle + n * 0.04 + mousePosition.y * 0.006) * n * 0.5}px
+            )
+            scale(${1.5 + Math.sin(angle * 2 + n * 0.05) * 0.4})    
+            rotate(${n + 45454}deg)
+          `,
           opacity: n < 300 ? 1 : 1 - (n - 300) / 300
-          // zIndex:    count - n
         }"
       />
       <div class="pauseinfo">{{ paused ? 'Click to ▶️' : 'Click to ⏸️' }}</div>
@@ -160,7 +172,6 @@ main::before {
   right: 10px;
   padding: 10px 20px;
   font-size: 16px;
-  /* background-color: #333; */
   color: #00000087;
   border: none;
   cursor: pointer;
