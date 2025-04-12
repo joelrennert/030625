@@ -122,12 +122,10 @@ const togglePause = () => {
   transform-origin: center;
   padding: 20px;
   box-shadow: 0 4px 12px rgba(0, 0, 0, 0.178);
+
   will-change: transform;
   opacity: 1;
-}
-
-.container:hover {
-  cursor: pointer;
+  background: linear-gradient(to right, #8bbdab, #dcedc1);
 }
 
 .container {
@@ -150,6 +148,7 @@ main {
   overflow: hidden;
   font-family: 'IBM Plex Mono';
   color: #333;
+  cursor: pointer;
 }
 
 main::before {
@@ -165,21 +164,16 @@ main::before {
   z-index: -1;
 }
 
-button {
+.pauseinfo {
   position: absolute;
   top: 10px;
   right: 10px;
   padding: 10px 20px;
   font-size: 16px;
-  background-color: #333;
-  color: #fff;
+  color: #00000087;
   border: none;
   cursor: pointer;
   border-radius: 5px;
   width: 10vw;
-}
-
-button:hover {
-  background-color: #444;
 }
 </style>

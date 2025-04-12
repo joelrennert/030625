@@ -3,7 +3,9 @@ import { ref, onMounted } from 'vue'
 import SquareNoAnimation from '../components/SquareNoAnimation.vue'
 import { onUnmounted } from 'vue'
 
-const count = 200
+// const count = 600
+const count = 400
+
 const angles = ref(new Array(count).fill(0))
 const mousePosition = ref({ x: 0, y: 0 })
 
