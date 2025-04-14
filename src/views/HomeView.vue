@@ -102,7 +102,7 @@ onUnmounted(() => {
 
   will-change: transform;
   opacity: 1;
-  background: linear-gradient(to right, #8bbdabbb, #dcedc190);
+  /* background: linear-gradient(to right, #8bbdabbb, #dcedc190); */
   /* background: linear-gradient(to right, #c8b97c, #ddd096); */
   /* background: radial-gradient(#d3b28abe, #d4bd91); */
   background: radial-gradient(#eac8b9be, #d8a774);
@@ -125,7 +125,6 @@ main {
   width: 100vw;
   height: 100vh;
   background-color: rgba(208, 203, 162, 0.802);
-  background-color: rgba(232, 214, 170, 0.85);
 
   overflow: hidden;
   font-family: 'IBM Plex Mono';
